@@ -1,5 +1,6 @@
 from enum import Enum
 from PIL import Image, ImageDraw, ImageFont
+from bars_in_rect_mixin import BarsInRectMixin
 
 from coordinates_transform_helper import CoordinatesTranfromHelper
 from image_colors import ColorsPalette
@@ -19,7 +20,7 @@ class TxtAlign(Enum):
     RIGTH = 2
 
 
-class ImageGenerator:
+class ImageGenerator():
 
     size: ImageSize
     margin: ImageMargin
@@ -27,7 +28,8 @@ class ImageGenerator:
     cth: CoordinatesTranfromHelper
     colors: ColorsPalette
 
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, *args, **kwargs) -> None:
+        super(ImageGenerator, self).__init__(*args, **kwargs)
         self.size = ImageSize()
         self.margin = ImageMargin()
         self.frame = ImageFrame()
@@ -35,6 +37,8 @@ class ImageGenerator:
         self.cth = CoordinatesTranfromHelper(
             self.size, self.margin, self.frame)
         (self.size.width, self.size.height) = (width, height)
+        print("ImageGenerator")
+
 
     def __str__(self) -> str:
         return (
@@ -71,7 +75,7 @@ class ImageGenerator:
                              TxtPos.BOTTOM, TxtAlign.CENTER)
         self.write_on_margin(canvas, "BOTTOM-RIGHT",
                              TxtPos.BOTTOM, TxtAlign.RIGTH)
-        self.draw_bars_in_rect(img=canvas, percents=[10, 20, 60, 100], dist=8)
+        self.draw_bars_in_rect(img=canvas, percents=[10, 20, 60, 100])
         img.show()
 
     def write_on_margin(self, canvas: ImageDraw, text: str, positon=TxtPos.TOP, alignment=TxtAlign.CENTER):
@@ -93,48 +97,18 @@ class ImageGenerator:
                 text_x = self.size.width - self.margin._right - w
         canvas.text((text_x, text_y), text, (0, 0, 0), font=font)
 
-    def draw_bars_in_rect(self, img: ImageDraw, percents: list, dist: int):
-        ######################################################################################################
-        # TODO: Possible parameters
-        #   canvas = [(x_start, y_start), (x_end, y_end)]   <--- custom
-        #   dist/margin - auto by %
-        #   bar_colors:
-        #       outline
-        #       fill
-        ######################################################################################################
-        # TODO: features
-        #   colors per value - list
-        #   fixed_bar_height (must be smaller than calcualated)
-        #   scale
-        #   texts
-        #   icons
-        ######################################################################################################
+class ImageGeneratorWithBars(ImageGenerator, BarsInRectMixin):
+    pass
 
-        (canvas_width, canvas_heigth) = (self.cth.content_box_width,
-                                         self.cth.content_box_height)
-        content_box_x = self.cth.content_box_coord[0]
-        content_box_y = self.cth.content_box_coord[1]
-
-        bar_height = (canvas_heigth - (len(percents)+1)*(dist)) / len(percents)
-        content_box_x = self.cth.content_box_coord[0]
-        content_box_y = self.cth.content_box_coord[1]
-        bar_width_max = (canvas_width - 2 * dist)
-        bar_top_list = [dist + i*(bar_height+dist)
-                        for i in range(len(percents))]
-        for i, percent in enumerate(percents):
-            ith_bar_width = percent/100*bar_width_max
-            rect = [(content_box_x + dist, content_box_y + bar_top_list[i]),
-                    (content_box_x + dist + ith_bar_width, content_box_y + bar_top_list[i] + bar_height)]
-
-            img.rectangle(rect, fill=(255, 255, 255, 128),
-                          outline="black", width=self.frame.line_width)
 
 
 if __name__ == "__main__":
-    ig = ImageGenerator(800, 800)
+    ig = ImageGeneratorWithBars(800, 800)
     ig.margin.margin = 50
     ig.margin.bottom = 200
     ig.frame.line_width = 3
+    ig.bar.dist = 16
+    ig.bar.outline_width = 8
     ig.draw()
 
     print(ig)
