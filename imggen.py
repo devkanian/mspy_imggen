@@ -74,7 +74,7 @@ class ImageGenerator():
                              TxtPos.BOTTOM, TxtAlign.CENTER)
         self.write_on_margin(canvas, "BOTTOM-RIGHT",
                              TxtPos.BOTTOM, TxtAlign.RIGTH)
-        self.draw_bars_in_rect(img=canvas, percents=[10, 20, 60, 100])
+        self.draw_bars_in_rect(img=canvas, percents=[10, 20, 60, 100, 33])
         img.save("misc/test.png")
         img.show()
 
@@ -108,10 +108,11 @@ if __name__ == "__main__":
     ig.margin.margin = 90
     # ig.margin.bottom = 200
     ig.frame.line_width = 10
-    ig.bar.dist = 16
+    # ig.bar.dist = 16
     ig.bar.outline_width = 8
     ig.bar.margin = 0
-    ig.custom_rect = [(None, None), (None, None)]
+    ig.custom_rect = [(None, None), (500, 500)]
+    # ig.fixed_bar_height = 50
     ig.draw()
     
     print(ig)

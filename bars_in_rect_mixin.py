@@ -9,6 +9,8 @@ class BarsInRectMixin:
     bar: BarInRectConfig
 
     _custom_rect = None
+    _dist_percent = None
+    _fixed_bar_height = None
 
     @property
     def custom_rect(self) -> list:
@@ -37,47 +39,59 @@ class BarsInRectMixin:
             value[1] = (value[1][0], self.cth.content_box_coord[3])
         self._custom_rect = value
 
+    @property
+    def dist_percent(self) -> float:
+        return self._dist_percent
+
+    @dist_percent.setter
+    def dist_percent(self, value):
+        self._custom_rect = value if type(
+            value) in [int, float] and value > 0 else None
+
+    @property
+    def fixed_bar_height(self) -> float:
+        return self._fixed_bar_height
+
+    @fixed_bar_height.setter
+    def fixed_bar_height(self, value):
+        self._fixed_bar_height = value if type(
+            value) == int and value > 0 else None
+
     def __init__(self, *args, **kwargs) -> None:
         super(BarsInRectMixin, self).__init__(*args, **kwargs)
         self.bar = BarInRectConfig()
         print("BarsInRectMixin")
 
-    # @property
-    # def rect(self):
-    #     return [(self.cth.content_box_coord[0], self.cth.content_box_coord[1]),
-    #             (self.cth.content_box_coord[0]+self.cth.content_box_width, self.cth.content_box_coord[1]+self.cth.content_box_height)]
+    @property
+    def full_rect(self):
+        return [(self.cth.content_box_coord[0], self.cth.content_box_coord[1]),
+                (self.cth.content_box_coord[0]+self.cth.content_box_width, self.cth.content_box_coord[1]+self.cth.content_box_height)]
 
-    def draw_bars_in_rect(self, img: ImageDraw, percents: list,
-                          dist_percent=None,
-                          bar_height=None
-                          ):
-        ######################################################################################################
-        # TODO: Possible parameters
-        #   rect = [(x_start, y_start), (x_end, y_end)]   <--- custom
+    def draw_bars_in_rect(self, img: ImageDraw, percents: list):
         ######################################################################################################
         # TODO: features
         #   colors per value - list
-        #   fixed_bar_height (must be smaller than calcualated)
         #   scale
         #   texts
         #   icons
         ######################################################################################################
         percents_no = len(percents)
 
-        if self.custom_rect is not None:
-            [(x_start, y_start), (x_end, y_end)] = self.custom_rect
-            (canvas_width, canvas_heigth) = (x_end-x_start, y_end-y_start)
+        if self.custom_rect is None:
+            [(x_start, y_start), (x_end, y_end)] = self.full_rect
         else:
-            (canvas_width, canvas_heigth) = (self.cth.content_box_width,
-                                             self.cth.content_box_height)
-            x_start = self.cth.content_box_coord[0]
-            y_start = self.cth.content_box_coord[1]
+            [(x_start, y_start), (x_end, y_end)] = self.custom_rect
+        (canvas_width, canvas_heigth) = (x_end-x_start, y_end-y_start)
 
-        if dist_percent:
+        if self.dist_percent:
             self.bar.dist_by_percent(
-                dist_percent, percents_no, canvas_heigth)
+                self.dist_percent, percents_no, canvas_heigth)
+        
 
         bar_height = self.calc_bar_height(percents_no, canvas_heigth)
+        if self.fixed_bar_height is not None:
+            bar_height = min(bar_height, self.fixed_bar_height)
+
         bar_width_max = (canvas_width - 2 * self.bar.margin)
         bar_top_list = [self.bar.margin + i * (bar_height+self.bar.dist)
                         for i in range(percents_no)]
