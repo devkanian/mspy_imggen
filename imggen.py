@@ -109,6 +109,7 @@ if __name__ == "__main__":
     ig.frame.line_width = 3
     ig.bar.dist = 16
     ig.bar.outline_width = 8
+    # ig.bar.margin = 50
     ig.draw()
 
     print(ig)
