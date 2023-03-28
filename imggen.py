@@ -39,7 +39,6 @@ class ImageGenerator():
         (self.size.width, self.size.height) = (width, height)
         print("ImageGenerator")
 
-
     def __str__(self) -> str:
         return (
             f"self.size.width:      {self.size.width}\n"
@@ -76,7 +75,9 @@ class ImageGenerator():
         self.write_on_margin(canvas, "BOTTOM-RIGHT",
                              TxtPos.BOTTOM, TxtAlign.RIGTH)
         self.draw_bars_in_rect(img=canvas, percents=[10, 20, 60, 100])
+        img.save("misc/test.png")
         img.show()
+
 
     def write_on_margin(self, canvas: ImageDraw, text: str, positon=TxtPos.TOP, alignment=TxtAlign.CENTER):
         font = ImageFont.truetype("fonts\AmaticSC-Bold.ttf", 32)
@@ -97,19 +98,20 @@ class ImageGenerator():
                 text_x = self.size.width - self.margin._right - w
         canvas.text((text_x, text_y), text, (0, 0, 0), font=font)
 
+
 class ImageGeneratorWithBars(ImageGenerator, BarsInRectMixin):
     pass
 
 
-
 if __name__ == "__main__":
-    ig = ImageGeneratorWithBars(800, 800)
-    ig.margin.margin = 50
-    ig.margin.bottom = 200
-    ig.frame.line_width = 3
+    ig = ImageGeneratorWithBars(1000, 1000)
+    ig.margin.margin = 90
+    # ig.margin.bottom = 200
+    ig.frame.line_width = 10
     ig.bar.dist = 16
     ig.bar.outline_width = 8
-    # ig.bar.margin = 50
+    ig.bar.margin = 0
+    ig.custom_rect = [(None, None), (None, None)]
     ig.draw()
-
+    
     print(ig)
