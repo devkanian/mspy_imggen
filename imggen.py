@@ -37,7 +37,6 @@ class ImageGenerator():
         self.cth = CoordinatesTranfromHelper(
             self.size, self.margin, self.frame)
         (self.size.width, self.size.height) = (width, height)
-        print("ImageGenerator")
 
     def __str__(self) -> str:
         return (
@@ -74,10 +73,14 @@ class ImageGenerator():
                              TxtPos.BOTTOM, TxtAlign.CENTER)
         self.write_on_margin(canvas, "BOTTOM-RIGHT",
                              TxtPos.BOTTOM, TxtAlign.RIGTH)
-        self.draw_bars_in_rect(img=canvas, percents=[10, 20, 60, 100, 33])
+        self.draw_bars_in_rect(img=canvas,
+                               percents=[(66, "01:03:34  Run"),
+                                         (10, "02:04:54  Weight Lifting"),
+                                         (60, "00:23:53  Indoor Cycling"),
+                                         (90, "01:02:34  Roller skating"),
+                                         (33, "00:30:00  Yoga")])
         img.save("misc/test.png")
         img.show()
-
 
     def write_on_margin(self, canvas: ImageDraw, text: str, positon=TxtPos.TOP, alignment=TxtAlign.CENTER):
         font = ImageFont.truetype("fonts\AmaticSC-Bold.ttf", 32)
@@ -107,12 +110,12 @@ if __name__ == "__main__":
     ig = ImageGeneratorWithBars(1000, 1000)
     ig.margin.margin = 90
     # ig.margin.bottom = 200
-    ig.frame.line_width = 10
-    # ig.bar.dist = 16
-    ig.bar.outline_width = 8
-    ig.bar.margin = 0
-    ig.custom_rect = [(None, None), (500, 500)]
-    # ig.fixed_bar_height = 50
+    ig.frame.line_width = 8
+    ig.bar.dist = 8
+    ig.bar.outline_width = 4
+    ig.bar.margin = 16
+    ig.custom_rect = [(None, None), (None, 500)]
+    # ig.fixed_bar_height = 100
     ig.draw()
-    
+
     print(ig)

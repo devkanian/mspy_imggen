@@ -33,4 +33,4 @@ class BarInRectConfig:
     def dist_by_percent(self, percent: int, bars_no: int, height: int):
         dist_no = bars_no + 1
         self.dist = max(1, round(height*percent/100/dist_no))
-        print(self.dist)
+
