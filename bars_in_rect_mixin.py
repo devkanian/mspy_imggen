@@ -1,16 +1,17 @@
 from PIL import ImageDraw, ImageFont
 from bar_in_rect_config import BarInRectConfig
+from bar_text_in_rect_config import BarTextInRectConfig
 
 from coordinates_transform_helper import CoordinatesTranfromHelper
 
-# DEFAULT_FONT_FILE = "fonts\Alkatra-VariableFont_wght.ttf"
-# DEFAULT_FONT_FILE = "fonts\MartianMono-VariableFont_wdth,wght.ttf.ttf"
-DEFAULT_FONT_FILE = "fonts\AmaticSC-Bold.ttf"
+# DEFAULT_FONT_FILE = "fonts//AmaticSC-Bold.ttf"
+# DEFAULT_FONT_FILE = "fonts//Overlock-Black.ttf"
 
 
 class BarsInRectMixin:
     cth: CoordinatesTranfromHelper
     bar: BarInRectConfig
+    bar_text: BarTextInRectConfig
 
     _custom_rect = None
     _fixed_bar_height = None
@@ -18,6 +19,7 @@ class BarsInRectMixin:
     def __init__(self, *args, **kwargs) -> None:
         super(BarsInRectMixin, self).__init__(*args, **kwargs)
         self.bar = BarInRectConfig()
+        self.bar_text = BarTextInRectConfig()
 
     @property
     def custom_rect(self) -> list:
@@ -56,15 +58,19 @@ class BarsInRectMixin:
 
     @fixed_bar_height.setter
     def fixed_bar_height(self, value):
-        self._fixed_bar_height = value if type(
-            value) == int and value > 0 else None
+        self._fixed_bar_height = value if type(value) == int and value > 0 else None
 
     @property
     def full_rect(self):
-        return [(self.cth.content_box_coord[0], self.cth.content_box_coord[1]),
-                (self.cth.content_box_coord[0]+self.cth.content_box_width, self.cth.content_box_coord[1]+self.cth.content_box_height)]
+        return [
+            (self.cth.content_box_coord[0], self.cth.content_box_coord[1]),
+            (
+                self.cth.content_box_coord[0] + self.cth.content_box_width,
+                self.cth.content_box_coord[1] + self.cth.content_box_height,
+            ),
+        ]
 
-    def draw_bars_in_rect(self, img: ImageDraw, percents: list, font_filename=DEFAULT_FONT_FILE):
+    def draw_bars_in_rect(self, img: ImageDraw, percents: list):
         ######################################################################################################
         # TODO: features
         #   colors per value - list
@@ -74,48 +80,56 @@ class BarsInRectMixin:
         percents_no = len(percents)
 
         x_start, y_start, x_end, y_end = self._get_content_rect()
-        canvas_width, canvas_height = x_end-x_start, y_end-y_start
+        canvas_width, canvas_height = x_end - x_start, y_end - y_start
 
         bar_height = self._get_bar_height(percents_no, canvas_height)
 
-        bar_max_width = (canvas_width - 2 * self.bar.margin)
-        bar_y_start_list = [self.bar.margin + i * (bar_height+self.bar.dist)
-                            for i in range(percents_no)]
+        bar_max_width = canvas_width - 2 * self.bar.margin
+        bar_y_start_list = [self.bar.margin + i * (bar_height + self.bar.dist) for i in range(percents_no)]
 
-        font_percent = 0.5
-        font_size = round((bar_height - 2*self.bar.outline_width)*font_percent)
-        font = ImageFont.truetype(font=font_filename, size=font_size)
+        font_size = self.bar_text.get_font_size(bar_height=bar_height, line_width=self.bar.outline_width)
+        font = ImageFont.truetype(font=self.bar_text.font_filename, size=font_size)
 
         for i, percent in enumerate(percents):
-            ith_bar_width, ith_bar_text = self._get_bar_details(
-                bar_max_width, percent)
+            ith_bar_width, ith_bar_text = self._get_bar_details(bar_max_width, percent)
 
             rect = self.get_bar_rect(
-                x_start, y_start, bar_height, bar_y_start_list, i, ith_bar_width)
+                x_start,
+                y_start,
+                bar_height,
+                bar_y_start_list,
+                i,
+                ith_bar_width,
+            )
 
-            img.rectangle(rect,
-                          fill=self.bar.color_fill,
-                          outline=self.bar.color_outline,
-                          width=self.bar.outline_width)
+            img.rectangle(
+                rect,
+                fill=self.bar.color_fill,
+                outline=self.bar.color_outline,
+                width=self.bar.outline_width,
+            )
 
             if ith_bar_text:
-                img.text(self._get_bar_text_start_point(bar_height, rect, font_size),
-                         ith_bar_text,
-                         (0, 0, 0),
-                         font=font)
+                img.text(
+                    self._get_bar_text_start_point(bar_height, rect, font_size),
+                    ith_bar_text,
+                    (0, 0, 0),
+                    font=font,
+                )
 
     def get_bar_rect(self, x_start, y_start, bar_height, bar_y_start_list, i, ith_bar_width):
-        rect = [(x_start + self.bar.margin, y_start + bar_y_start_list[i]),
-                (x_start + self.bar.margin + ith_bar_width, y_start + bar_y_start_list[i] + bar_height)]
+        rect = [
+            (x_start + self.bar.margin, y_start + bar_y_start_list[i]),
+            (x_start + self.bar.margin + ith_bar_width, y_start + bar_y_start_list[i] + bar_height),
+        ]
 
         return rect
 
     def _get_bar_details(self, bar_max_width, percent):
         if type(percent) == tuple:
-            (ith_bar_width, ith_bar_text) = (
-                percent[0]/100*bar_max_width, percent[1])
+            (ith_bar_width, ith_bar_text) = (percent[0] / 100 * bar_max_width, percent[1])
         elif type(percent) in [int, float]:
-            ith_bar_width = percent/100*bar_max_width
+            ith_bar_width = percent / 100 * bar_max_width
             ith_bar_text = None
         else:
             ith_bar_width = 0
@@ -136,10 +150,11 @@ class BarsInRectMixin:
         return x_start, y_start, x_end, y_end
 
     def _get_bar_text_start_point(self, bar_height, rect, font_size):
-        x_text = rect[0][0] + self.bar.outline_width + max(1, bar_height//10)
-        y_text = rect[0][1] + self.bar.outline_width + \
-            (bar_height-(1.3*font_size)-2*self.bar.outline_width)//2
+        left_margin = self.bar_text.get_left_margin(bar_height=bar_height)
+        x_text = rect[0][0] + self.bar.outline_width + left_margin
+        y_text = rect[0][1] + self.bar.outline_width + (bar_height - 1 * font_size - 2 * self.bar.outline_width) // 2
+        y_text -= round(self.bar_text.updown_correction*font_size)
         return (x_text, y_text)
 
     def _calc_bar_height(self, percents_no: int, canvas_heigth: int):
-        return (canvas_heigth - (percents_no-1) * (self.bar.dist) - 2*self.bar.margin) / percents_no
+        return (canvas_heigth - (percents_no - 1) * (self.bar.dist) - 2 * self.bar.margin) / percents_no

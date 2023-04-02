@@ -1,4 +1,3 @@
-
 class BarInRectConfig:
     _margin = None
     _dist = 8
