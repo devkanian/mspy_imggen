@@ -1,4 +1,4 @@
-from PIL import ImageDraw, ImageFont
+from PIL import ImageFont
 from bar_in_rect_config import BarInRectConfig
 from bar_text_in_rect_config import BarTextInRectConfig
 
@@ -22,11 +22,11 @@ class BarsInRectMixin:
         self.bar_text = BarTextInRectConfig()
 
     @property
-    def custom_rect(self) -> list:
+    def custom_bar_rect(self) -> list:
         return self._custom_rect
 
-    @custom_rect.setter
-    def custom_rect(self, value):
+    @custom_bar_rect.setter
+    def custom_bar_rect(self, value):
         # Verify if value is list of 2 tuples of 2 ints or Nones
         # eg. [(100,100), (900,900)]
         # eg. [(None,None), (None,height/2)]    <--- TOP HALF OF image within margins
@@ -70,7 +70,7 @@ class BarsInRectMixin:
             ),
         ]
 
-    def draw_bars_in_rect(self, img: ImageDraw, percents: list):
+    def draw_bars_in_rect(self, percents: list):
         ######################################################################################################
         # TODO: features
         #   colors per value - list
@@ -102,7 +102,7 @@ class BarsInRectMixin:
                 ith_bar_width,
             )
 
-            img.rectangle(
+            self._canvas.rectangle(
                 rect,
                 fill=self.bar.color_fill,
                 outline=self.bar.color_outline,
@@ -110,7 +110,7 @@ class BarsInRectMixin:
             )
 
             if ith_bar_text:
-                img.text(
+                self._canvas.text(
                     self._get_bar_text_start_point(bar_height, rect, font_size),
                     ith_bar_text,
                     (0, 0, 0),
@@ -143,10 +143,10 @@ class BarsInRectMixin:
         return bar_height
 
     def _get_content_rect(self):
-        if self.custom_rect is None:
+        if self.custom_bar_rect is None:
             [(x_start, y_start), (x_end, y_end)] = self.full_rect
         else:
-            [(x_start, y_start), (x_end, y_end)] = self.custom_rect
+            [(x_start, y_start), (x_end, y_end)] = self.custom_bar_rect
         return x_start, y_start, x_end, y_end
 
     def _get_bar_text_start_point(self, bar_height, rect, font_size):

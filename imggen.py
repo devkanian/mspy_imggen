@@ -27,6 +27,9 @@ class ImageGenerator:
     cth: CoordinatesTranfromHelper
     colors: ColorsPalette
 
+    _img: Image
+    _canvas: ImageDraw
+
     def __init__(self, width: int, height: int, *args, **kwargs) -> None:
         super(ImageGenerator, self).__init__(*args, **kwargs)
         self.size = ImageSize()
@@ -35,6 +38,9 @@ class ImageGenerator:
         self.colors = ColorsPalette()
         self.cth = CoordinatesTranfromHelper(self.size, self.margin, self.frame)
         (self.size.width, self.size.height) = (width, height)
+
+        self._img = Image.new("RGB", self.size.size, self.colors._img_bg)
+        self._canvas = ImageDraw.Draw(self._img, mode="RGBA")
 
     def __str__(self) -> str:
         return (
@@ -56,46 +62,26 @@ class ImageGenerator:
         )
         return [start_point, end_point]
 
-    def draw_frame(self, canvas: ImageDraw):
-        canvas.rectangle(
+    def draw_frame(self):
+        self._canvas.rectangle(
             self.frame_coordinates,
             fill=self.colors._frame_bg,
             outline=self.colors._frame_outline,
             width=self.frame.line_width,
         )
 
-    def draw(self):
-        img = Image.new("RGB", self.size.size, self.colors._img_bg)
-        canvas = ImageDraw.Draw(img, mode="RGBA")
-        self.draw_frame(canvas)
-        self.write_on_margin(canvas, "TOP-LEFT", TxtPos.TOP, TxtAlign.LEFT)
-        self.write_on_margin(canvas, "TOP-CENTER", TxtPos.TOP, TxtAlign.CENTER)
-        self.write_on_margin(canvas, "TOP-RIGHT", TxtPos.TOP, TxtAlign.RIGTH)
-        self.write_on_margin(canvas, "BOTTOM-LEFT", TxtPos.BOTTOM, TxtAlign.LEFT)
-        self.write_on_margin(canvas, "BOTTOM-CENTER", TxtPos.BOTTOM, TxtAlign.CENTER)
-        self.write_on_margin(canvas, "BOTTOM-RIGHT", TxtPos.BOTTOM, TxtAlign.RIGTH)
-        self.draw_bars_in_rect(
-            img=canvas,
-            percents=[
-                (66, "01:03:34  Run"),
-                (10, "02:04:54  Weight Lifting"),
-                (60, "00:23:53  Indoor Cycling"),
-                (90, "01:02:34  Roller skating"),
-                (33, "00:30:00  Yoga"),
-            ],
-        )
-        img.save("misc/test.png")
-        img.show()
+    def show(self):
+        self._img.save("misc/test.png")
+        self._img.show()
 
     def write_on_margin(
         self,
-        canvas: ImageDraw,
         text: str,
         positon=TxtPos.TOP,
         alignment=TxtAlign.CENTER,
     ):
         font = ImageFont.truetype("fonts//AmaticSC-Bold.ttf", 32)
-        w, h = canvas.textsize(text, font=font)
+        w, h = self._canvas.textsize(text, font=font)
         match positon:
             case positon.TOP:
                 text_y = (self.margin.top - h) // 2
@@ -108,7 +94,7 @@ class ImageGenerator:
                 text_x = (self.size.width - w + self.margin.left - self.margin.right) // 2
             case TxtAlign.RIGTH:
                 text_x = self.size.width - self.margin._right - w
-        canvas.text((text_x, text_y), text, (0, 0, 0), font=font)
+        self._canvas.text((text_x, text_y), text, (0, 0, 0), font=font)
 
 
 class ImageGeneratorWithBars(ImageGenerator, BarsInRectMixin):
@@ -123,13 +109,28 @@ if __name__ == "__main__":
     ig.bar.dist = 8
     ig.bar.outline_width = 4
     ig.bar.margin = 16
-    ig.custom_rect = [(None, None), (None, 500)]
+    ig.custom_bar_rect = [(None, None), (None, 500)]
     # ig.fixed_bar_height = 100
-    
+
     # ig.bar_text.font_filename = "fonts//AmaticSC-Bold.ttf"
     ig.bar_text.set_fixed_font_size(80)
     ig.bar_text.set_relative_font_size(1)
     # ig.bar_text.set_fixed_left_margin(100)
-    ig.draw()
-
-    print(ig)
+    ig.draw_frame()
+    ig.write_on_margin("TOP-LEFT", TxtPos.TOP, TxtAlign.LEFT)
+    ig.write_on_margin("TOP-CENTER", TxtPos.TOP, TxtAlign.CENTER)
+    ig.write_on_margin("TOP-RIGHT", TxtPos.TOP, TxtAlign.RIGTH)
+    ig.write_on_margin("BOTTOM-LEFT", TxtPos.BOTTOM, TxtAlign.LEFT)
+    ig.write_on_margin("BOTTOM-CENTER", TxtPos.BOTTOM, TxtAlign.CENTER)
+    ig.write_on_margin("BOTTOM-RIGHT", TxtPos.BOTTOM, TxtAlign.RIGTH)
+    ig.draw_bars_in_rect(
+        percents=[
+            (66, "01:03:34  Run"),
+            (10, "02:04:54  Weight lifting"),
+            (60, "00:23:53  Indoor Cycling"),
+            (90, "01:02:34  Roller skating"),
+            (33, "00:30:00  Yoga"),
+        ],
+    )
+    ig.show()
+    # print(ig)
