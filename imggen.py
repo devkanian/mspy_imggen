@@ -81,7 +81,13 @@ class ImageGenerator:
         alignment=TxtAlign.CENTER,
     ):
         font = ImageFont.truetype("fonts//AmaticSC-Bold.ttf", 32)
-        w, h = self._canvas.textsize(text, font=font)
+        # font = ImageFont.truetype("fonts//Overlock-Black.ttf", 32)
+
+        ascent, descent = font.getmetrics()
+        w = font.getmask(text).getbbox()[2]
+        # h = font.getmask(text).getbbox()[3]   <--- this would show height for specific text        
+        h = ascent + descent   # <--- this is height for font (text independent)
+
         match positon:
             case positon.TOP:
                 text_y = (self.margin.top - h) // 2
@@ -95,6 +101,8 @@ class ImageGenerator:
             case TxtAlign.RIGTH:
                 text_x = self.size.width - self.margin._right - w
         self._canvas.text((text_x, text_y), text, (0, 0, 0), font=font)
+        
+        
 
 
 class ImageGeneratorWithBars(ImageGenerator, BarsInRectMixin):
@@ -103,8 +111,8 @@ class ImageGeneratorWithBars(ImageGenerator, BarsInRectMixin):
 
 if __name__ == "__main__":
     ig = ImageGeneratorWithBars(1000, 1000)
-    ig.margin.margin = 90
-    ig.margin.bottom = 200
+    ig.margin.margin = 40
+    # ig.margin.bottom = 200
     ig.frame.line_width = 16
     ig.bar.dist = 8
     ig.bar.outline_width = 4
@@ -120,8 +128,8 @@ if __name__ == "__main__":
     ig.write_on_margin("TOP-LEFT", TxtPos.TOP, TxtAlign.LEFT)
     ig.write_on_margin("TOP-CENTER", TxtPos.TOP, TxtAlign.CENTER)
     ig.write_on_margin("TOP-RIGHT", TxtPos.TOP, TxtAlign.RIGTH)
-    ig.write_on_margin("BOTTOM-LEFT", TxtPos.BOTTOM, TxtAlign.LEFT)
-    ig.write_on_margin("BOTTOM-CENTER", TxtPos.BOTTOM, TxtAlign.CENTER)
+    ig.write_on_margin("BOTTOM-LEFTj", TxtPos.BOTTOM, TxtAlign.LEFT)
+    ig.write_on_margin("BOTTOM-CENTERÓ", TxtPos.BOTTOM, TxtAlign.CENTER)
     ig.write_on_margin("BOTTOM-RIGHT", TxtPos.BOTTOM, TxtAlign.RIGTH)
     ig.draw_bars_in_rect(
         percents=[
