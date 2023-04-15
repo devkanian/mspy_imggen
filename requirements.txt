@@ -1,2 +1,4 @@
 pytest
 pillow
+flake8
+black
